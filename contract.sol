@@ -144,15 +144,15 @@ contract Crowdsale is owned,StandardToken {
 		AgreementUrlEn="http://stonetoken.io/images/imageContent/WhitePaper-en.pdf";
 		AgreementHashEn="fce75f63780343b8e8860851a58167c0";		
 		PayToken=0;
-		fiatCost=1; currency=391;rate =currency/fiatCost; 
+		fiatCost=1; currency=391;rate=currency/fiatCost; 
 
-		startPREICO = 1524233603; 
+		startPREICO = 1526421600; 
 		periodPREICO = 10;
 		bonusPREICO=25;
 		PREICOcap=725200;
 		restrictedPREICOpersent=25;
 
-		start=1525529603;
+		start=1529272800;
 		period=50;
 		restrictedPercent=20;	
 		multisigMoney=0; restrictedMoney=0;
@@ -259,7 +259,6 @@ contract Crowdsale is owned,StandardToken {
 		consumptionLink[consumptionPointer]=url; consumptionSum[consumptionPointer]=_value; consumptionPointer++;
 	}
 	function showMoneyTransfer(uint  ptr) public constant returns (string){		// the link to the money transfer to multisig wallet
-//		if(ptr==0) ptr=1; else if(ptr>=consumptionPointer) ptr=consumptionPointer-1;
 		string storage url=consumptionLink[(ptr-1)];  
 		return url;
 	}	
@@ -375,7 +374,7 @@ contract Crowdsale is owned,StandardToken {
 }
 
 contract StoneToken is Crowdsale {	
-    string  public standard    = 'T987-1 Stone Token';
+    string  public standard    = 'T987 Stone Token';
     string  public name        = 'T987StoneToken';
     string  public symbol      = "T987STTN";
     uint8   public decimals    = 0;
