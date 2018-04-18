@@ -375,7 +375,7 @@ contract Crowdsale is owned,StandardToken {
 }
 
 contract StoneToken is Crowdsale {	
-    string  public standard    = 'T987 Stone Token';
+    string  public standard    = 'T987-1 Stone Token';
     string  public name        = 'T987StoneToken';
     string  public symbol      = "T987STTN";
     uint8   public decimals    = 0;
