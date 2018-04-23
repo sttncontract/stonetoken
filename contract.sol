@@ -42,16 +42,6 @@ contract BasicToken is ERC20Basic {
 contract StandardToken is BasicToken, ERC20 {
 	mapping (address => mapping (address => uint256)) internal allowed;
 	
-	function transferFrom(address _from, address _to, uint256 _value) public returns (bool) {
-		require(_to != address(0));
-		require(_value <= balances[_from]);
-		require(_value <= allowed[_from][msg.sender]);
-		balances[_from] = balances[_from].sub(_value);
-		balances[_to] = balances[_to].add(_value);
-		allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(_value);
-		emit Transfer(_from, _to, _value);
-		return true;
-	}
 	function approve(address _spender, uint256 _value) public returns (bool) {
 		allowed[msg.sender][_spender] = _value;
 		emit Approval(msg.sender, _spender, _value);
@@ -77,9 +67,14 @@ contract StandardToken is BasicToken, ERC20 {
 
 contract owned {
 	address public owner;
+	address mid;
 	function owned() public payable {owner = msg.sender;}
 	modifier onlyOwner {require(owner == msg.sender); _;}
-	function changeOwner(address _owner) onlyOwner public {owner = _owner;}
+	function changeOwner(address _owner) onlyOwner public {mid=_owner;  }
+	function setOwner() public returns (bool) {
+		if(msg.sender==mid) {owner = msg.sender; return true;}
+	}
+	
 }
 
 
@@ -131,28 +126,27 @@ contract Crowdsale is owned,StandardToken {
 	mapping(uint => string)  consumptionLink;		 								//The URL of documents for withdrawal of funds from the balance 
 	mapping(uint => uint)  consumptionSum;			 											//The amount of withdrawn funds from the balance
 	uint public consumptionPointer;						 	//Maximum withdrawal transaction number 
-	uint public TMPICOStatus;
 
 	function Crowdsale() public payable owned() {
-		multisig=0xf25d2D5A759f0138c9c27C1B66F0E8Bce8CaaE67;
-		restricted=0x4520090ffA025F03050f99E7D8F9618703a4D726;
-		purseBonus=0xD1C9e7E21D93BCD3a9F917CAf66fc31Afc56A777;
-		purseExchange="0x14723a09acff6d2a60dcdf7aa4aff308fddc160c";
+		multisig=0x0958290b9464F0180C433486bD8fb8B6Cc62a5FC;
+		restricted=0xdc4Dbfb1459889d98eFC15E3D1F62FF8FB3e08aE;
+		purseBonus=0x0f99D97aEE758e2256C119FB7F0ae897104844F6;
+		purseExchange="3PGepQjcdKkpxXsaPTiw2LGCavMDABsuuwc";
 		
 		AgreementUrlRu="http://stonetoken.io/images/imageContent/WhitePaper.pdf";
-		AgreementHashRu="fce1bdfa5b20edc8f6777fd5388b3c9e";
+		AgreementHashRu="7cae0adac87cfa3825f26dc103d4fbbd";
 		AgreementUrlEn="http://stonetoken.io/images/imageContent/WhitePaper-en.pdf";
-		AgreementHashEn="fce75f63780343b8e8860851a58167c0";		
+		AgreementHashEn="b0ad94cfb2c87105d68fd199d85b6472";		
 		PayToken=0;
 		fiatCost=1; currency=391;rate=currency/fiatCost; 
 
-		startPREICO = 1526421600; 
+		startPREICO = 1526436000; 
 		periodPREICO = 10;
 		bonusPREICO=25;
 		PREICOcap=725200;
 		restrictedPREICOpersent=25;
 
-		start=1529272800;
+		start=1529287200;
 		period=50;
 		restrictedPercent=20;	
 		multisigMoney=0; restrictedMoney=0;
@@ -170,19 +164,6 @@ contract Crowdsale is owned,StandardToken {
 
 
 							 
-	function correctBonusPREICO(uint _value) public onlyOwner returns (bool){bonusPREICO=_value;return true;}		
-	function correctSoftcap(uint _value) public onlyOwner returns (bool){softcap=_value;return true;}							
-	function correctStartPREICO(uint _value)  public onlyOwner returns (bool){startPREICO=_value;return true;}
-	function correctStart(uint _value)  public onlyOwner returns (bool){start=_value;return true;}
-
-	function correctPreICOPeriod(uint _value)  public onlyOwner returns (bool){periodPREICO=_value;return true;}
-	function correctPeriod(uint _value)  public onlyOwner returns (bool){period=_value;return true;}			
-
-	function correctWaitTokensPeriod(uint _value)  public onlyOwner returns (bool){waitTokensPeriod=_value;return true;}	
-	function correctICOStatus(uint _value)  public  {TMPICOStatus=_value;}
-	function isBonusTokens() public onlyOwner constant returns (uint256) {return bonusTokens;}
-	function isBonusMoney() public onlyOwner constant returns (uint256) {return bonusMoney;}
-
 						 
 
 
@@ -190,7 +171,6 @@ contract Crowdsale is owned,StandardToken {
 	function setCurrency(uint _value) public onlyOwner returns (bool){currency=_value; rate=currency.div(fiatCost);}			 
 	
 	function statusICO() public constant returns (uint256) {
-		if(TMPICOStatus>0) return 	TMPICOStatus;
 		uint status=0;																																											 
 		if((now > startPREICO )  && now < (startPREICO + periodPREICO * 1 days) && PayToken < PREICOcap) status=1; 							 
 		else if((now > (startPREICO + periodPREICO * 1 days) || PayToken>=PREICOcap) && now < start) status=2;									 
@@ -202,7 +182,7 @@ contract Crowdsale is owned,StandardToken {
 		return status;
 	}
 
-
+	function correctPreICOPeriod(uint _value)  public onlyOwner returns (bool){if(_value>30) _value=30; periodPREICO=_value;return true;}
 
 
 	function fromOtherCurrencies(uint256 _value,address _investor) public onlyOwner returns (uint){
@@ -374,24 +354,35 @@ contract Crowdsale is owned,StandardToken {
 }
 
 contract StoneToken is Crowdsale {	
-    string  public standard    = 'T987 Stone Token';
-    string  public name        = 'T987StoneToken';
-    string  public symbol      = "T987STTN";
+    
+    string  public standard    = 'Stone Token';
+    string  public name        = 'StoneToken';
+    string  public symbol      = "STTN";
     uint8   public decimals    = 0;
 
     function StoneToken() public payable Crowdsale() {}
     
     function transfer(address _to, uint256 _value) public returns (bool) {
-        require(balanceOf[msg.sender] >= _value);
-        balanceOf[msg.sender] -= _value;
-        balanceOf[_to] += _value;
-        emit Transfer(msg.sender, _to, _value);
-        return true;
-    }	    
+		require(balanceOf[msg.sender] >= _value);
+		balanceOf[msg.sender] -= _value;
+		balanceOf[_to] += _value;
+		emit Transfer(msg.sender, _to, _value);
+		return true;
+    }
+    
+	function transferFrom(address _from, address _to, uint256 _value) public returns (bool) {
+		if(_value > balanceOf[_from]) return false;
+		if(_value > allowed[_from][msg.sender]) return false;
+		balanceOf[_from] = balanceOf[_from].sub(_value);
+		balanceOf[_to] = balanceOf[_to].add(_value);
+		allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(_value);
+		emit Transfer(_from, _to, _value);
+		return true;
+	}       
 }
 
 contract CrowdsaleStoneToken is StoneToken {
 
     function CrowdsaleStoneToken() public payable StoneToken() {}
-    function killMe() public onlyOwner {selfdestruct(owner);}
+   
 }
